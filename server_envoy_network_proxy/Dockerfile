@@ -7,9 +7,12 @@ COPY go.sum /go/src/app
 RUN go mod download
 RUN GOOS=linux GOARCH=amd64 go build -o /go/bin/server
 
-FROM envoyproxy/envoy@sha256:5d17b613824732465c64a44ecc4ece631a0054db3ff5f5e3aeedfd095173ab05as as envoy-base  
+FROM envoyproxy/envoy@sha256:5d17b613824732465c64a44ecc4ece631a0054db3ff5f5e3aeedfd095173ab05 as envoy-base
 
 FROM gcr.io/distroless/base@sha256:e711a716d8b7fe9c4f7bbf1477e8e6b451619fcae0bc94fdf6109d490bf6cea0
+
+LABEL "tee.launch_policy.allow_cmd_override"="false"
+LABEL "tee.launch_policy.log_redirect"="always"
 
 COPY --from=go-build /go/bin/server /main
 COPY tls_proxy.yaml /

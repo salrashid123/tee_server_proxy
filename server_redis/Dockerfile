@@ -11,6 +11,9 @@ FROM docker.io/redis@sha256:11f7040a861a1456ecad6d58babe47e2c8d05b626187a671bd72
 
 FROM gcr.io/distroless/base@sha256:e711a716d8b7fe9c4f7bbf1477e8e6b451619fcae0bc94fdf6109d490bf6cea0
 
+LABEL "tee.launch_policy.allow_cmd_override"="false"
+LABEL "tee.launch_policy.log_redirect"="always"
+
 COPY --from=go-build /go/bin/server /main
 COPY --from=redis-base /usr/local/bin/redis-server /redis-server
 

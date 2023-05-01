@@ -5,6 +5,10 @@ WORKDIR /app
 RUN npm install --omit=dev
 
 FROM distroless/nodejs20-debian11@sha256:c58f34f14c27360964cecf4cfa732dc785279e300d7fe7ae293ac633631effae
+
+LABEL "tee.launch_policy.allow_cmd_override"="false"
+LABEL "tee.launch_policy.log_redirect"="always"
+
 COPY --from=build-env /app /app
 WORKDIR /app
 EXPOSE 8081
