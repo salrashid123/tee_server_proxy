@@ -42,7 +42,16 @@ See
 - [Run multiple services in a container](https://docs.docker.com/config/containers/multi-service_container/)
 
 
-There are four variations described here with different background applications and key requirements.
+- As for why not use `systemd`? 
+
+Well, running systemd requires **a lot** of additional software which can compromise the TEE itself.  Its far better to use minimal container surface.  In most of the examples, i just "copied" the static-compiled binary over into a [distroless/base](https://github.com/GoogleContainerTools/distroless).  
+ 
+I recognize not all background services can run on distroless images...
+
+---
+
+
+Anyway, there are four variations described here with different background applications and key requirements.
 
 * `Redis`
   
