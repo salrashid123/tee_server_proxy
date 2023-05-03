@@ -2,6 +2,7 @@ const https = require("https")
 const crypto = require('crypto')
 const express = require("express")
 
+const gcpMetadata = require('gcp-metadata');
 
 // Pretend the following use the TEE's Attestation Tokens to recall alice and bob's partial keys
 const {SecretManagerServiceClient} = require('@google-cloud/secret-manager').v1;
@@ -11,7 +12,17 @@ const port = 8081;
 
 async function main() {
 
+// set this to whichever projectID where the secrets are at
+// for convenience, i'm setting all the secrets in one project 
+// taken from the gce metadata server.  Realistically, these will be different projects for each collaborator
+
 const project_id = 'YOUR_PROJECT_ID';
+
+const isAvailable = await gcpMetadata.isAvailable();
+if (isAvailable) {
+  const projectMetadata = await gcpMetadata.project();
+  project_id = projectMetadata;
+}
 
 const client = new SecretManagerServiceClient();
 

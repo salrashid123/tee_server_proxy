@@ -192,3 +192,7 @@ Now that the node app has all the keys, run the client
 cd client/
 node main.js
 ```
+
+### tmpfs
+
+TODO:  write certificates to any `/tmpfs` that that is mapped to the container

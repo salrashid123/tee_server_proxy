@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "description": "mcbn express node.js",
     "dependencies": {
-      "express": "4.18.1",
-      "@google-cloud/secret-manager": "4.2.2"
+        "@google-cloud/secret-manager": "4.2.2",
+        "express": "4.18.1",
+        "gcp-metadata": "^5.2.0"
     }
-  }
+}

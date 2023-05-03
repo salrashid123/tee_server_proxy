@@ -10,17 +10,31 @@ import (
 	"os/exec"
 	"sync"
 
+	"cloud.google.com/go/compute/metadata"
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	secretmanagerpb "cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 )
 
-var (
-	defaultProjectID = "YOUR_PROJECT_ID" // change this
-)
+var ()
 
 func main() {
 
+	// set this to whichever projectID where the secrets are at
+	// for convenience, i'm setting all the secrets in one project
+	// taken from the gce metadata server.  Realistically, these will be different projects for each collaborator
+
+	defaultProjectID := "YOUR_PROJECT_ID" // change this
+
 	ctx := context.Background()
+
+	if metadata.OnGCE() {
+		var err error
+		defaultProjectID, err = metadata.ProjectID()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return
+		}
+	}
 
 	// pretend the following uses the TEE's Attestation Service to retrieve the mTLS keypair from a remote system
 	client, err := secretmanager.NewClient(ctx)
