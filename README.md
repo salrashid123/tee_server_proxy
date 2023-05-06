@@ -57,6 +57,9 @@ Anyway, there are four variations described here with different background appli
   
   In ths mode the foreground application acquires keys and provides those keys to redis as its own startup arguments for mTLS
 
+* `Postgres`
+  
+  In ths mode the foreground application acquires keys and provides those keys to postgres as its own startup arguments for mTLS
 
 * `Envoy (HTTPFilter)`
 
@@ -70,9 +73,7 @@ Anyway, there are four variations described here with different background appli
 
   This mode describes a very rare situation where multiple collaborators each provide a partial key to use for TLS between TEEs.  In this, mTLS is not used in the traditional RSA keypair mode but the actual `TEE->TEE` traffic is only allowed if each collaborator provides their key share. 
 
-* `Redis`
-  
-  In ths mode the foreground application acquires keys and provides those keys to postgres as its own startup arguments for mTLS
+
 
 
 
