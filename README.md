@@ -55,7 +55,7 @@ Anyway, there are four variations described here with different background appli
 
 * `Redis`
   
-  In ths mode the forground application acquires keys and provides those keys to redis as its own startup arguments for mTLS
+  In ths mode the foreground application acquires keys and provides those keys to redis as its own startup arguments for mTLS
 
 
 * `Envoy (HTTPFilter)`
@@ -69,6 +69,11 @@ Anyway, there are four variations described here with different background appli
 * [Multiparty Consent Based Networks (MCBN)](https://github.com/salrashid123/mcbn)
 
   This mode describes a very rare situation where multiple collaborators each provide a partial key to use for TLS between TEEs.  In this, mTLS is not used in the traditional RSA keypair mode but the actual `TEE->TEE` traffic is only allowed if each collaborator provides their key share. 
+
+* `Redis`
+  
+  In ths mode the foreground application acquires keys and provides those keys to postgres as its own startup arguments for mTLS
+
 
 
 ### Setup
@@ -91,12 +96,13 @@ Then edit the following in ths repo and replace the `PROJECT_ID` value you use
 - server_envoy_http_proxy/main.go
 - server_envoy_network_proxy/main.go
 - server_redis/main.go
+- server_postgres/main.go
 - psk/main.js
 ```
 
 ---
 
-### client -> container(envoy_redis_proxy -> redis_backend) 
+### client -> container(redis_backend) 
 
 For Redis, build the container and test:
 
@@ -115,6 +121,61 @@ You can verify using the test redis client:
 cd client
 go run main.go
 ```
+
+---
+
+### client -> container(postgres_backend) 
+
+For Postgres, we use the default docker image and [entrypoint](https://github.com/docker-library/postgres/blob/master/docker-entrypoint.sh) after bootstrapping the certificates.
+
+We also setup postgres cert based auth (which IMO, i s basic, it uses the CN field as the username; i suspect you can do more but my knowledge is basic).
+
+`main.go` sets up the startup parameters:
+
+```golang
+		cmd := exec.Command("/usr/local/bin/docker-entrypoint.sh", "postgres", "--port=5432", "--ssl=on", "--ssl_cert_file=/config/server.crt", "--ssl_key_file=/config/server.key", "--ssl_ca_file=/config/ca.pem", "--hba_file=/config/pg_hba.conf")
+		//cmd.Env = os.Environ()
+		//cmd.Env = append(cmd.Env, "POSTGRES_PASSWORD=mysecretpassword")
+```
+
+the `pg_hba.conf` file enforces certs:
+
+```conf
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+local   postgres        all                                     peer
+hostssl all             all             0.0.0.0/0               cert
+```
+
+to use
+
+```bash
+cd server_postgres/
+docker build -t  server_postgres .
+
+docker run -ti -v "$HOME"/.config/gcloud:/root/.config/gcloud   -p 5432:5432  server_postgres 
+```
+
+At this point the postgres container listens on `:5432` for mTLS traffic where the keys were downloaded from Secret Manger
+
+You can verify using the a postgres client with client certs
+
+```bash
+# change vm's public address to /etc/hosts
+127.0.0.1	server.domain.com
+
+# POSTGRES_PASSWORD=mysecretpassword
+$ psql "host=server.domain.com port=5432 user=postgres sslmode=verify-full sslcert=certs/postgres.crt sslkey=certs/postgres.key sslrootcert=certs/ca.pem"
+
+  postgres=# SHOW SERVER_VERSION;
+          server_version         
+  --------------------------------
+  15.2 (Debian 15.2-1.pgdg110+1)
+  (1 row)
+```
+
+note the  `postgres.crt` has the CN field thats the username....like i said, its a real basic way to do auth...
+
+  `C=US, O=Google, OU=Enterprise, CN=postgres`
 
 ---
 
